@@ -14,15 +14,17 @@ RUN apt-get update && apt-get install -y \
     tzdata vim net-tools unzip iputils-ping telnet git iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. 预装工具：Cloudflared, ttyd 和 EasyTier
-RUN curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb \
+# 3. 预装工具：使用最新的 v2.4.5 链接，并增加解压后的容错处理
+RUN wget --tries=5 --retry-connrefused -O cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb \
     && dpkg -i cloudflared.deb \
     && rm cloudflared.deb \
-    && curl -L https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 -o /usr/local/bin/ttyd \
+    && wget --tries=5 --retry-connrefused -O /usr/local/bin/ttyd https://github.com/tsl0922/ttyd/releases/download/1.7.3/ttyd.x86_64 \
     && chmod +x /usr/local/bin/ttyd \
-    && curl -L -o easytier.zip https://github.com/EasyTier/EasyTier/releases/download/v1.2.1/easytier-linux-x86_64.zip \
-    && unzip easytier.zip && mv easytier-core /usr/bin/ && rm easytier.zip
-
+    && wget --tries=5 --retry-connrefused -O easytier.zip https://github.com/EasyTier/EasyTier/releases/download/v2.4.5/easytier-linux-x86_64-v2.4.5.zip \
+    && unzip -j easytier.zip "*easytier-core*" -d /usr/bin/ \
+    && unzip -j easytier.zip "*easytier-cli*" -d /usr/bin/ \
+    && chmod +x /usr/bin/easytier-core /usr/bin/easytier-cli \
+    && rm easytier.zip
 # 4. SSH 基础配置
 RUN mkdir -p /run/sshd && \
     sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/g' /etc/ssh/sshd_config && \
