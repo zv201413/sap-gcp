@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-push:
-    runs-runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -15,8 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 关键补充：确保脚本在推送到 Docker 之前具有执行权限
-      # 如果你在 Windows 下编辑脚本，这个步骤能救命
+      # 确保脚本在构建前具有执行权限，防止 Windows 环境权限丢失
       - name: Make entrypoint executable
         run: chmod +x entrypoint.sh
 
@@ -32,7 +31,6 @@ jobs:
         with:
           context: .
           push: true
-          # 使用 lowercase 转换，防止 GitHub 用户名包含大写导致构建失败
           tags: |
             ghcr.io/${{ github.repository_owner }}/sap-gcp:latest
             ghcr.io/${{ github.repository_owner }}/sap-gcp:26.01.29
